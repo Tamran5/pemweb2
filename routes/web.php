@@ -3,55 +3,54 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('beranda');
+// Rute untuk homepage
+Route::get('/', function(){
+    $title = "Homepage - Toko Saya";
+    return view('web.homepage',['title' =>$title]);
+   });
 
-Route::get('/kategori', function () {
-    return view('kategori');
-})->name('kategori');
-
-Route::get('/kategori/{slug}', function ($slug) {
-    return view('kategori', ['slug' => $slug]);
-})->name('kategori.tampil');
-
-Route::get('/produk/{id}', function ($id) {
-    return view('produk', ['id' => $id]);
-})->name('produk.tampil');
-
-// Rute publik tanpa autentikasi
-Route::get('/keranjang', function () {
-    return view('keranjang');
-})->name('keranjang');
-
-// Rute yang memerlukan autentikasi
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Checkout
-    Route::get('/pembayaran', function () {
-        return view('pembayaran');
-    })->name('pembayaran');
-
-    // Riwayat Pesanan
-    Volt::route('/pesanan', 'pesanan.index')->name('pesanan.daftar');
-    Volt::route('/pesanan/{order_id}', 'pesanan.show')->name('pesanan.tampil');
-
-    // Pengaturan Pengguna
-    Route::redirect('/pengaturan', '/pengaturan/profil');
-    Volt::route('/pengaturan/profil', 'pengaturan.profil')->name('pengaturan.profil');
-    Volt::route('/pengaturan/alamat', 'pengaturan.alamat')->name('pengaturan.alamat');
-    Volt::route('/pengaturan/metode-pembayaran', 'pengaturan.metode-pembayaran')->name('pengaturan.metode-pembayaran');
+// Rute untuk halaman Products
+Route::get('product', function() {
+    return view('web.product'); // Halaman produk
 });
 
-// Rute untuk admin (dengan middleware tambahan)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dasbor', function () {
-        return view('admin.dasbor');
-    })->name('admin.dasbor');
-
-    Volt::route('/produk', 'admin.produk.index')->name('admin.produk.daftar');
-    Volt::route('/produk/tambah', 'admin.produk.tambah')->name('admin.produk.tambah');
-    Volt::route('/produk/{id}/edit', 'admin.produk.edit')->name('admin.produk.edit');
+// Rute untuk halaman produk individual berdasarkan slug
+Route::get('product/{slug}', function($slug) {
+    return "halaman single product - ".$slug;
 });
 
-// Sertakan rute autentikasi default Laravel
-require __DIR__.'/auth.php';
+// Rute untuk halaman Categories
+Route::get('categories', function() {
+    return view('web.categories'); // Halaman kategori produk
+});
+
+// Rute untuk halaman kategori individual berdasarkan slug
+Route::get('category/{slug}', function($slug) {
+    return "halaman single category - ".$slug;
+});
+
+// Rute untuk halaman Cart
+Route::get('cart', function() {
+    return "halaman cart";
+});
+
+// Rute untuk halaman Checkout
+Route::get('checkout', function() {
+    return "halaman checkout";
+});
+
+// Rute untuk halaman dashboard, hanya untuk pengguna yang terautentikasi
+Route::view('dashboard', 'dashboard')
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+// Grup middleware untuk pengaturan terkait pengguna yang terautentikasi
+Route::middleware(['auth'])->group(function () {
+    Route::redirect('settings', 'settings/profile'); // Redirect ke halaman profil
+
+    Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
+    Volt::route('settings/password', 'settings.password')->name('settings.password');
+    Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+});
+
+require __DIR__.'/auth.php'; // Memuat rute otentikasi
